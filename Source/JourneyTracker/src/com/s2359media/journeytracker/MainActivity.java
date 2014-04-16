@@ -1,4 +1,6 @@
-package com2359media.journeytracker;
+package com.s2359media.journeytracker;
+
+import com.s2359media.journeytracker.R;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
