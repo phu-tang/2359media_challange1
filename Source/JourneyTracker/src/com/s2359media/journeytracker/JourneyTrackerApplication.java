@@ -15,6 +15,7 @@ public class JourneyTrackerApplication extends Application {
 
 	        try {
 	            LocationLibrary.initialiseLibrary(getBaseContext(), CommonConstant.REFRESH_TIME_INTERVAL, (int)CommonConstant.REFRESH_TIME_INTERVAL*2, getPackageName());
+//	            LocationLibrary.useFineAccuracyForRequests(true); no need to do this
 	        }
 	        catch (UnsupportedOperationException ex) {
 	            Log.d("TestApplication", "UnsupportedOperationException thrown - the device doesn't have any location providers");

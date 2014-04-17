@@ -38,7 +38,6 @@ public class MapActivity extends FragmentActivity {
 		super.onCreate(savedInstanceState);
 
 		setContentView(R.layout.activity_map);
-
 		FragmentManager manager = getSupportFragmentManager();
 		SupportMapFragment mapFragment = (SupportMapFragment) manager.findFragmentById(R.id.map);
 		googleMap = mapFragment.getMap();

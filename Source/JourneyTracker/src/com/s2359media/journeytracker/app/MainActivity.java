@@ -6,6 +6,7 @@ import java.util.List;
 
 import android.R.anim;
 import android.app.AlertDialog;
+import android.app.NotificationManager;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -56,6 +57,7 @@ public class MainActivity extends ActionBarActivity {
 		new InitData().execute();
 		etSearch = (EditText) findViewById(R.id.etSearch);
 		etSearch.addTextChangedListener(getTextSearch());
+		cancelNotification();
 	}
 
 	@Override
@@ -63,6 +65,12 @@ public class MainActivity extends ActionBarActivity {
 
 		getMenuInflater().inflate(R.menu.main, menu);
 		return true;
+	}
+
+	private void cancelNotification() {
+		NotificationManager mNotificationManager = (NotificationManager) mContext
+				.getSystemService(Context.NOTIFICATION_SERVICE);
+		mNotificationManager.cancel(CommonConstant.NOTIFICATION_ID);
 	}
 
 	@Override
@@ -83,9 +91,9 @@ public class MainActivity extends ActionBarActivity {
 		if (id == R.id.action_location_found) {
 			LocationLibrary.forceLocationUpdate(mContext);
 		}
-		
-		if(id==R.id.action_show_map){
-			Intent intent=new Intent(this,MapActivity.class);
+
+		if (id == R.id.action_show_map) {
+			Intent intent = new Intent(this, MapActivity.class);
 			intent.putExtra(CommonConstant.KEY_CURRENT_DATE, currentSelectDate);
 			startActivity(intent);
 		}

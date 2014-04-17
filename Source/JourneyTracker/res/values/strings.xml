@@ -11,4 +11,5 @@
 	<string name="action_refresh">Refresh</string>
 	<string name="action_show_map">Show on the Map</string>
 	<string name="nodata">No data available</string>
+	<string name="new_location">Locaton updated</string>
 </resources>
