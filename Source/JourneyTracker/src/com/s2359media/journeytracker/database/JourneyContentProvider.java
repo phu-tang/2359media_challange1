@@ -18,6 +18,7 @@ public class JourneyContentProvider extends ContentProvider {
 	// fields for my content provider
 	static final String PROVIDER_NAME = "com.s2359media.journeytracker.provider";
 	public static final String URL = "content://" + PROVIDER_NAME + "/journey";
+	public static final String URL_GETITEM = "content://" + PROVIDER_NAME + "/item/";
 	public static final Uri CONTENT_URI = Uri.parse(URL);
 
 	// fields for the database
@@ -30,9 +31,9 @@ public class JourneyContentProvider extends ContentProvider {
 	// integer values used in content URI
 	static final int GET_DATE = 1;
 	static final int JOURNEY = 2;
+	static final int GET_ITEM = 3;
 
 	DBHelper dbHelper;
-
 
 	// maps content URI "patterns" to the integer values that were set above
 	static final UriMatcher uriMatcher;
@@ -40,6 +41,7 @@ public class JourneyContentProvider extends ContentProvider {
 		uriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
 		uriMatcher.addURI(PROVIDER_NAME, "journey", GET_DATE);
 		uriMatcher.addURI(PROVIDER_NAME, "journey/#", JOURNEY);
+		uriMatcher.addURI(PROVIDER_NAME, "item/#", GET_ITEM);
 	}
 
 	// database declarations
@@ -49,8 +51,9 @@ public class JourneyContentProvider extends ContentProvider {
 	static final int DATABASE_VERSION = 1;
 	static final String CREATE_TABLE = " CREATE TABLE " + TABLE_NAME + " ("
 			+ ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + LAT
-			+ " DOUBLE NOT NULL, " + LNG + " DOUBLE NOT NULL, " + NAME + " TEXT, "
-			+ DATE + " LONG NOT NULL, " + TIME + " Long NOT NULL " + ");";
+			+ " DOUBLE NOT NULL, " + LNG + " DOUBLE NOT NULL, " + NAME
+			+ " TEXT, " + DATE + " LONG NOT NULL, " + TIME + " Long NOT NULL "
+			+ ");";
 
 	// class that creates and manages the provider's database
 	private static class DBHelper extends SQLiteOpenHelper {
@@ -110,12 +113,15 @@ public class JourneyContentProvider extends ContentProvider {
 		case JOURNEY:
 			queryBuilder.appendWhere(DATE + "=" + uri.getLastPathSegment());
 			break;
+		case GET_ITEM:
+			queryBuilder.appendWhere(ID + "=" + uri.getLastPathSegment());
+			break;
 		default:
 			throw new IllegalArgumentException("Unknown URI " + uri);
 		}
 		if (sortOrder == null || sortOrder == "") {
 			// No sorting-> sort on names by default
-			sortOrder = NAME;
+			sortOrder = TIME;
 		}
 		Cursor cursor = queryBuilder.query(database, projection, selection,
 				selectionArgs, null, null, sortOrder);

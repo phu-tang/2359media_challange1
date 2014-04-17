@@ -3,11 +3,15 @@ package com.s2359media.journeytracker.adapter;
 import java.text.ParseException;
 import java.util.List;
 
+import com.android.volley.RequestQueue;
+import com.android.volley.toolbox.Volley;
 import com.s2359media.journeytracker.R;
 import com.s2359media.journeytracker.model.JourneyModel;
 import com.s2359media.journeytracker.ulti.CommonUlti;
 
 import android.content.Context;
+import android.os.Handler;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,11 +29,14 @@ public class JourneyAdapter extends BaseAdapter {
 	Context mContext;
 	List<JourneyModel> mData;
 	LayoutInflater inflater;
+	RequestQueue queue;
 
 	public JourneyAdapter(Context context, List<JourneyModel> data) {
 		mContext = context;
 		mData = data;
 		inflater = LayoutInflater.from(mContext);
+		queue = Volley.newRequestQueue(context);
+		updateData();
 	}
 
 	public void updateData(List<JourneyModel> data) {
@@ -72,5 +79,26 @@ public class JourneyAdapter extends BaseAdapter {
 		}
 		return convertView;
 	}
+
+	public void updateData() {
+		for (JourneyModel model : mData) {
+			if(TextUtils.isEmpty(model.getName())){
+				queue.add(CommonUlti.getAddressByLocation(model.getLocation(), model.getId(), mContext,mHandler));
+			}
+		}
+	}
+
+	Handler mHandler = new Handler() {
+		public void handleMessage(android.os.Message msg) {
+			int id = msg.arg1;
+			String name = (String) msg.obj;
+			for (JourneyModel model : mData) {
+				if (model.getId() == id) {
+					model.setName(name);
+					notifyDataSetChanged();
+				}
+			}
+		};
+	};
 
 }

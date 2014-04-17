@@ -7,10 +7,24 @@
     tools:context="com.s2359media.journeytracker.app.MainActivity"
     tools:ignore="MergeRootFrame" >
 
+    <EditText
+        android:id="@+id/etSearch"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/action_search" />
+
     <ListView
         android:id="@+id/list_item"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content" >
     </ListView>
+
+    <TextView
+        android:id="@+id/tvNodata"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="@string/nodata"
+        android:visibility="gone" />
 
 </LinearLayout>
