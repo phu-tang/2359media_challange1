@@ -3,6 +3,7 @@
 
     <string name="app_name">JourneyTracker</string>
     <string name="hello_world">Hello world!</string>
-    <string name="action_settings">Settings</string>
-
+    <string name="action_choosedate">Choose a day</string>
+	<string name="loading">Loading!!!</string>
+	<string name="title_select_date">Please select a date</string>
 </resources>

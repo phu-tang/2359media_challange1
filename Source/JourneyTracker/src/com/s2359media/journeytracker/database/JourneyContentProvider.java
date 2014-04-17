@@ -17,7 +17,7 @@ public class JourneyContentProvider extends ContentProvider {
 
 	// fields for my content provider
 	static final String PROVIDER_NAME = "com.s2359media.journeytracker.provider";
-	static final String URL = "content://" + PROVIDER_NAME + "/journey";
+	public static final String URL = "content://" + PROVIDER_NAME + "/journey";
 	public static final Uri CONTENT_URI = Uri.parse(URL);
 
 	// fields for the database
@@ -104,8 +104,8 @@ public class JourneyContentProvider extends ContentProvider {
 		switch (uriMatcher.match(uri)) {
 		// maps all database column names
 		case GET_DATE:
-			return database.rawQuery("SELECT " + DATE + "FROM " + TABLE_NAME
-					+ "GROUP BY " + DATE, null);
+			return database.rawQuery("SELECT " + DATE + " FROM " + TABLE_NAME
+					+ " GROUP BY " + DATE, null);
 
 		case JOURNEY:
 			queryBuilder.appendWhere(DATE + "=" + uri.getLastPathSegment());

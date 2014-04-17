@@ -1,5 +1,6 @@
 package com.s2359media.journeytracker.model;
 
+import com.google.android.gms.maps.model.LatLng;
 import com.s2359media.journeytracker.database.JourneyContentProvider;
 
 import android.content.ContentValues;
@@ -8,9 +9,9 @@ import android.text.TextUtils;
 
 public class JourneyModel {
 
-	private String id;
+	private int id;
 	private double lat;
-	private double lon;
+	private double lng;
 	private String name;
 	private long date;
 	private long time;
@@ -19,21 +20,26 @@ public class JourneyModel {
 			long date, long time) {
 		super();
 		this.lat = lat;
-		this.lon = lon;
+		this.lng = lon;
 		this.name = name;
 		this.date = date;
 		this.time = time;
 	}
 	
-	public JourneyModel (Cursor cursor){
-		
+	public JourneyModel (Cursor c){
+		id=c.getInt(c.getColumnIndex(JourneyContentProvider.ID));
+		lng=c.getDouble(c.getColumnIndex(JourneyContentProvider.LNG));
+		lat=c.getDouble(c.getColumnIndex(JourneyContentProvider.LAT));
+		name=c.getString(c.getColumnIndex(JourneyContentProvider.NAME));
+		date=c.getLong(c.getColumnIndex(JourneyContentProvider.DATE));
+		time=c.getLong(c.getColumnIndex(JourneyContentProvider.TIME));
 	}
 
-	public String getId() {
+	public int getId() {
 		return id;
 	}
 
-	public void setId(String id) {
+	public void setId(int id) {
 		this.id = id;
 	}
 
@@ -45,12 +51,12 @@ public class JourneyModel {
 		this.lat = lat;
 	}
 
-	public double getLon() {
-		return lon;
+	public double getLng() {
+		return lng;
 	}
 
-	public void setLon(double lon) {
-		this.lon = lon;
+	public void setLng(double lng) {
+		this.lng = lng;
 	}
 
 	public String getName() {
@@ -76,20 +82,32 @@ public class JourneyModel {
 	public void setTime(long time) {
 		this.time = time;
 	}
+	
+	public LatLng getLocation(){
+		return new LatLng(lat, lng);
+	}
 
 	public ContentValues getContentValues() {
 		ContentValues contentValues = new ContentValues();
-		if (!TextUtils.isEmpty(id)) {
+		if (id!=0) {
 			contentValues.put(JourneyContentProvider.ID, id);
 		}
 		contentValues.put(JourneyContentProvider.LAT, lat);
-		contentValues.put(JourneyContentProvider.LNG, lon);
+		contentValues.put(JourneyContentProvider.LNG, lng);
 		if (!TextUtils.isEmpty(name)) {
 			contentValues.put(JourneyContentProvider.NAME, name);
 		}
 		contentValues.put(JourneyContentProvider.DATE, date);
 		contentValues.put(JourneyContentProvider.TIME, time);
 		return contentValues;
+	}
+	
+	@Override
+	public String toString() {
+		if(TextUtils.isEmpty(name)){
+			return lat+","+lng;
+		}
+		return name;
 	}
 
 }
