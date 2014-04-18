@@ -4,7 +4,6 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
-import android.R.anim;
 import android.app.AlertDialog;
 import android.app.NotificationManager;
 import android.app.ProgressDialog;
@@ -15,6 +14,10 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.app.LoaderManager.LoaderCallbacks;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
 import android.support.v7.app.ActionBarActivity;
 import android.text.Editable;
 import android.text.TextUtils;
@@ -25,34 +28,40 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.ListView;
 
-import com.google.android.gms.drive.internal.i;
 import com.littlefluffytoys.littlefluffylocationlibrary.LocationLibrary;
 import com.s2359media.journeytracker.R;
 import com.s2359media.journeytracker.adapter.JourneyAdapter;
+import com.s2359media.journeytracker.adapter.JourneyCursorAdapter;
 import com.s2359media.journeytracker.database.JourneyContentProvider;
 import com.s2359media.journeytracker.model.JourneyModel;
 import com.s2359media.journeytracker.ulti.AccentRemover;
 import com.s2359media.journeytracker.ulti.CommonConstant;
 import com.s2359media.journeytracker.ulti.CommonUlti;
 
-public class MainActivity extends ActionBarActivity {
+public class MainActivity extends ActionBarActivity implements LoaderCallbacks<Cursor> {
 
 	private Context mContext;
 	private ListView list;
-	private JourneyAdapter adapter;
+	// private JourneyAdapter adapter;
 	private EditText etSearch;
+	private JourneyCursorAdapter cursorAdapter;
+	private LoaderManager loaderManager;
 
-	private List<JourneyModel> listJourneyModelsOrginal;
-	private List<JourneyModel> listJourneyModelsSearch;
 	private Long currentSelectDate;
 	private String[] slistDates;
 	private List<Long> listDates;
+	CursorLoader cursorLoader;
+
+	private final int ID_GET_JOURNEY_BY_DATE = 1;
+	private final int ID_SEARCH = 2;
+	private final String KEYWORD = "keyword";
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 		mContext = this;
+		loaderManager = getSupportLoaderManager();
 		currentSelectDate = (long) 0;
 		list = (ListView) findViewById(R.id.list_item);
 		new InitData().execute();
@@ -111,6 +120,8 @@ public class MainActivity extends ActionBarActivity {
 				dialog.setMessage(getString(R.string.loading));
 				dialog.show();
 			}
+			cursorAdapter = new JourneyCursorAdapter(mContext, null, 0);
+			list.setAdapter(cursorAdapter);
 		}
 
 		@Override
@@ -157,47 +168,47 @@ public class MainActivity extends ActionBarActivity {
 		}
 	}
 
-	private class InitJourneyData extends AsyncTask<Void, Void, Void> {
-		ProgressDialog dialog;
-
-		@Override
-		protected void onPreExecute() {
-			dialog = new ProgressDialog(mContext);
-			if (!isFinishing()) {
-				dialog.setMessage(getString(R.string.loading));
-				dialog.show();
-			}
-		}
-
-		@Override
-		protected Void doInBackground(Void... params) {
-			String url = JourneyContentProvider.URL + "/" + currentSelectDate;
-			Uri uriData = Uri.parse(url);
-			Cursor c = getContentResolver().query(uriData, null, null, null, null);
-			if (c != null) {
-				listJourneyModelsOrginal = new ArrayList<JourneyModel>();
-				while (c.moveToNext()) {
-					listJourneyModelsOrginal.add(new JourneyModel(c));
-				}
-			}
-			c.close();
-			return null;
-		}
-
-		@Override
-		protected void onPostExecute(Void result) {
-			if (dialog != null && dialog.isShowing()) {
-				dialog.dismiss();
-			}
-			if (adapter == null) {
-				adapter = new JourneyAdapter(mContext, listJourneyModelsOrginal);
-				list.setAdapter(adapter);
-			} else {
-				adapter.updateData(listJourneyModelsOrginal);
-				adapter.notifyDataSetChanged();
-			}
-		}
-	}
+	// private class InitJourneyData extends AsyncTask<Void, Void, Void> {
+	// ProgressDialog dialog;
+	//
+	// @Override
+	// protected void onPreExecute() {
+	// dialog = new ProgressDialog(mContext);
+	// if (!isFinishing()) {
+	// dialog.setMessage(getString(R.string.loading));
+	// dialog.show();
+	// }
+	// }
+	//
+	// @Override
+	// protected Void doInBackground(Void... params) {
+	// String url = JourneyContentProvider.URL + "/" + currentSelectDate;
+	// Uri uriData = Uri.parse(url);
+	// Cursor c = getContentResolver().query(uriData, null, null, null, null);
+	// if (c != null) {
+	// listJourneyModelsOrginal = new ArrayList<JourneyModel>();
+	// while (c.moveToNext()) {
+	// listJourneyModelsOrginal.add(new JourneyModel(c));
+	// }
+	// }
+	// c.close();
+	// return null;
+	// }
+	//
+	// @Override
+	// protected void onPostExecute(Void result) {
+	// if (dialog != null && dialog.isShowing()) {
+	// dialog.dismiss();
+	// }
+	// // if (adapter == null) {
+	// // adapter = new JourneyAdapter(mContext, listJourneyModelsOrginal);
+	// // // list.setAdapter(adapter);
+	// // } else {
+	// // adapter.updateData(listJourneyModelsOrginal);
+	// // adapter.notifyDataSetChanged();
+	// // }
+	// }
+	// }
 
 	private void showChooseDateDialog() {
 		new AlertDialog.Builder(this).setSingleChoiceItems(slistDates, -1, null)
@@ -214,7 +225,8 @@ public class MainActivity extends ActionBarActivity {
 	}
 
 	private void getJourneyFromDb(String title) {
-		new InitJourneyData().execute();
+		// new InitJourneyData().execute();
+		loaderManager.restartLoader(ID_GET_JOURNEY_BY_DATE, null, this);
 	}
 
 	private void showDialogNoData() {
@@ -234,24 +246,75 @@ public class MainActivity extends ActionBarActivity {
 
 			@Override
 			public void afterTextChanged(Editable s) {
-				if (adapter != null) {
+				if (cursorAdapter != null) {
 					if (TextUtils.isEmpty(s)) {
-						adapter.updateData(listJourneyModelsOrginal);
+						// adapter.updateData(listJourneyModelsOrginal);
+						loaderManager.restartLoader(ID_GET_JOURNEY_BY_DATE, null, MainActivity.this);
 					} else {
-						listJourneyModelsSearch = new ArrayList<JourneyModel>();
-						for (JourneyModel model : listJourneyModelsOrginal) {
-							String input = AccentRemover.removeAccent(s.toString().toLowerCase());
-							String name = AccentRemover.removeAccent(model.toString().toLowerCase());
-							if (name.contains(input)) {
-								listJourneyModelsSearch.add(model);
-							}
-						}
-						adapter.updateData(listJourneyModelsSearch);
+						// listJourneyModelsSearch = new
+						// ArrayList<JourneyModel>();
+						// for (JourneyModel model : listJourneyModelsOrginal) {
+						String input = AccentRemover.removeAccent(s.toString().toLowerCase());
+						Bundle bundle = new Bundle();
+						bundle.putString(KEYWORD, input);
+						// loaderManager.initLoader(ID_SEARCH, bundle,
+						// MainActivity.this);
+						loaderManager.restartLoader(ID_SEARCH, bundle, MainActivity.this);
+						// String name =
+						// AccentRemover.removeAccent(model.toString().toLowerCase());
+						// if (name.contains(input)) {
+						// listJourneyModelsSearch.add(model);
+						// }
+						// }
+						// adapter.updateData(listJourneyModelsSearch);
 					}
 
-					adapter.notifyDataSetChanged();
+					// adapter.notifyDataSetChanged();
 				}
 			}
 		};
 	}
+
+	@Override
+	public Loader<Cursor> onCreateLoader(int arg0, Bundle arg1) {
+		String url;
+		Uri uriData;
+		switch (arg0) {
+		case ID_GET_JOURNEY_BY_DATE:
+			if (currentSelectDate == -1) {
+				return null;
+			}
+			url = JourneyContentProvider.URL + "/" + currentSelectDate;
+			uriData = Uri.parse(url);
+			cursorLoader = new CursorLoader(mContext, uriData, null, null, null, null);
+			break;
+		case ID_SEARCH:
+			String keyword = arg1.getString(KEYWORD);
+			url = JourneyContentProvider.URL_SEARCH + currentSelectDate;
+			uriData = Uri.parse(url);
+			cursorLoader = new CursorLoader(mContext, uriData, null, null, new String[] { keyword }, null);
+			break;
+		default:
+			break;
+		}
+		return cursorLoader;
+	}
+
+	@Override
+	public void onLoadFinished(Loader<Cursor> arg0, Cursor arg1) {
+		arg1.setNotificationUri(mContext.getContentResolver(), JourneyContentProvider.CONTENT_URI);
+		if (cursorAdapter == null) {
+			cursorAdapter = new JourneyCursorAdapter(mContext, arg1, 0);
+			list.setAdapter(cursorAdapter);
+		} else {
+			cursorAdapter.swapCursor(arg1);
+		}
+	}
+
+	@Override
+	public void onLoaderReset(Loader<Cursor> arg0) {
+		// TODO Auto-generated method stub
+
+	}
+
 }

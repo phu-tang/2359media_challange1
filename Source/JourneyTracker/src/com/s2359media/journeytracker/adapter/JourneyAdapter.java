@@ -24,6 +24,7 @@ import android.widget.TextView;
  * 
  * 
  */
+@Deprecated
 public class JourneyAdapter extends BaseAdapter {
 
 	Context mContext;
@@ -71,8 +72,7 @@ public class JourneyAdapter extends BaseAdapter {
 
 		tvTitle.setText(mData.get(position).toString());
 		try {
-			tvTime.setText(CommonUlti.getFormatTime(mData.get(position)
-					.getTime()));
+			tvTime.setText(CommonUlti.getFormatTime(mData.get(position).getTime()));
 		} catch (ParseException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -82,8 +82,8 @@ public class JourneyAdapter extends BaseAdapter {
 
 	public void updateData() {
 		for (JourneyModel model : mData) {
-			if(TextUtils.isEmpty(model.getName())){
-				queue.add(CommonUlti.getAddressByLocation(model.getLocation(), model.getId(), mContext,mHandler));
+			if (TextUtils.isEmpty(model.getName())) {
+				queue.add(CommonUlti.getAddressByLocation(model.getLocation(), model.getId(), mContext, mHandler));
 			}
 		}
 	}

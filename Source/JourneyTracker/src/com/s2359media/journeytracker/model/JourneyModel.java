@@ -2,6 +2,7 @@ package com.s2359media.journeytracker.model;
 
 import com.google.android.gms.maps.model.LatLng;
 import com.s2359media.journeytracker.database.JourneyContentProvider;
+import com.s2359media.journeytracker.ulti.AccentRemover;
 
 import android.content.ContentValues;
 import android.database.Cursor;
@@ -16,8 +17,7 @@ public class JourneyModel {
 	private long date;
 	private long time;
 
-	public JourneyModel(String id, double lat, double lon, String name,
-			long date, long time) {
+	public JourneyModel(String id, double lat, double lon, String name, long date, long time) {
 		super();
 		this.lat = lat;
 		this.lng = lon;
@@ -25,14 +25,14 @@ public class JourneyModel {
 		this.date = date;
 		this.time = time;
 	}
-	
-	public JourneyModel (Cursor c){
-		id=c.getInt(c.getColumnIndex(JourneyContentProvider.ID));
-		lng=c.getDouble(c.getColumnIndex(JourneyContentProvider.LNG));
-		lat=c.getDouble(c.getColumnIndex(JourneyContentProvider.LAT));
-		name=c.getString(c.getColumnIndex(JourneyContentProvider.NAME));
-		date=c.getLong(c.getColumnIndex(JourneyContentProvider.DATE));
-		time=c.getLong(c.getColumnIndex(JourneyContentProvider.TIME));
+
+	public JourneyModel(Cursor c) {
+		id = c.getInt(c.getColumnIndex(JourneyContentProvider.ID));
+		lng = c.getDouble(c.getColumnIndex(JourneyContentProvider.LNG));
+		lat = c.getDouble(c.getColumnIndex(JourneyContentProvider.LAT));
+		name = c.getString(c.getColumnIndex(JourneyContentProvider.NAME));
+		date = c.getLong(c.getColumnIndex(JourneyContentProvider.DATE));
+		time = c.getLong(c.getColumnIndex(JourneyContentProvider.TIME));
 	}
 
 	public int getId() {
@@ -82,14 +82,14 @@ public class JourneyModel {
 	public void setTime(long time) {
 		this.time = time;
 	}
-	
-	public LatLng getLocation(){
+
+	public LatLng getLocation() {
 		return new LatLng(lat, lng);
 	}
 
 	public ContentValues getContentValues() {
 		ContentValues contentValues = new ContentValues();
-		if (id!=0) {
+		if (id != 0) {
 			contentValues.put(JourneyContentProvider.ID, id);
 		}
 		contentValues.put(JourneyContentProvider.LAT, lat);
@@ -99,13 +99,14 @@ public class JourneyModel {
 		}
 		contentValues.put(JourneyContentProvider.DATE, date);
 		contentValues.put(JourneyContentProvider.TIME, time);
+		contentValues.put(JourneyContentProvider.TITLE, AccentRemover.removeAccent(this.toString().toLowerCase()));
 		return contentValues;
 	}
-	
+
 	@Override
 	public String toString() {
-		if(TextUtils.isEmpty(name)){
-			return lat+","+lng;
+		if (TextUtils.isEmpty(name)) {
+			return lat + "," + lng;
 		}
 		return name;
 	}

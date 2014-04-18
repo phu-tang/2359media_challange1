@@ -19,6 +19,7 @@ public class JourneyContentProvider extends ContentProvider {
 	static final String PROVIDER_NAME = "com.s2359media.journeytracker.provider";
 	public static final String URL = "content://" + PROVIDER_NAME + "/journey";
 	public static final String URL_GETITEM = "content://" + PROVIDER_NAME + "/item/";
+	public static final String URL_SEARCH = "content://" + PROVIDER_NAME + "/search/";
 	public static final Uri CONTENT_URI = Uri.parse(URL);
 
 	// fields for the database
@@ -28,10 +29,12 @@ public class JourneyContentProvider extends ContentProvider {
 	public static final String NAME = "name";
 	public static final String DATE = "date";
 	public static final String TIME = "times";
+	public static final String TITLE = "title";
 	// integer values used in content URI
 	static final int GET_DATE = 1;
 	static final int JOURNEY = 2;
 	static final int GET_ITEM = 3;
+	static final int SEARCH = 4;
 
 	DBHelper dbHelper;
 
@@ -42,18 +45,17 @@ public class JourneyContentProvider extends ContentProvider {
 		uriMatcher.addURI(PROVIDER_NAME, "journey", GET_DATE);
 		uriMatcher.addURI(PROVIDER_NAME, "journey/#", JOURNEY);
 		uriMatcher.addURI(PROVIDER_NAME, "item/#", GET_ITEM);
+		uriMatcher.addURI(PROVIDER_NAME, "search/#", SEARCH);
 	}
 
 	// database declarations
 	private SQLiteDatabase database;
 	static final String DATABASE_NAME = "Journey";
 	static final String TABLE_NAME = "journey";
-	static final int DATABASE_VERSION = 1;
-	static final String CREATE_TABLE = " CREATE TABLE " + TABLE_NAME + " ("
-			+ ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + LAT
-			+ " DOUBLE NOT NULL, " + LNG + " DOUBLE NOT NULL, " + NAME
-			+ " TEXT, " + DATE + " LONG NOT NULL, " + TIME + " Long NOT NULL "
-			+ ");";
+	static final int DATABASE_VERSION = 2;
+	static final String CREATE_TABLE = " CREATE TABLE " + TABLE_NAME + " (" + ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
+			+ LAT + " DOUBLE NOT NULL, " + LNG + " DOUBLE NOT NULL, " + NAME + " TEXT, " + DATE + " LONG NOT NULL, " + TIME
+			+ " Long NOT NULL, " + TITLE + " TEXT NOT NULL " + ");";
 
 	// class that creates and manages the provider's database
 	private static class DBHelper extends SQLiteOpenHelper {
@@ -73,8 +75,7 @@ public class JourneyContentProvider extends ContentProvider {
 		@Override
 		public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
 			// TODO Auto-generated method stub
-			Log.w(DBHelper.class.getName(), "Upgrading database from version "
-					+ oldVersion + " to " + newVersion
+			Log.w(DBHelper.class.getName(), "Upgrading database from version " + oldVersion + " to " + newVersion
 					+ ". Old data will be destroyed");
 			db.execSQL("DROP TABLE IF EXISTS " + TABLE_NAME);
 			onCreate(db);
@@ -116,6 +117,9 @@ public class JourneyContentProvider extends ContentProvider {
 		case GET_ITEM:
 			queryBuilder.appendWhere(ID + "=" + uri.getLastPathSegment());
 			break;
+		case SEARCH:
+			return database.rawQuery("SELECT *" + " FROM " + TABLE_NAME
+					+ " WHERE " + DATE + "= " + uri.getLastPathSegment() + " AND "+ TITLE +" LIKE '%"+selectionArgs[0]+"%'", null);
 		default:
 			throw new IllegalArgumentException("Unknown URI " + uri);
 		}
@@ -148,26 +152,23 @@ public class JourneyContentProvider extends ContentProvider {
 	}
 
 	@Override
-	public int update(Uri uri, ContentValues values, String selection,
-			String[] selectionArgs) {
+	public int update(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
 		// TODO Auto-generated method stub
 		int count = 0;
 
-		count = database.update(TABLE_NAME, values,
-				ID + " = " + uri.getLastPathSegment(), null);
-		getContext().getContentResolver().notifyChange(uri, null);
+		count = database.update(TABLE_NAME, values, ID + " = " + uri.getLastPathSegment(), null);
+		getContext().getContentResolver().notifyChange(CONTENT_URI, null);
 		return count;
 	}
 
 	@Override
 	public int delete(Uri uri, String selection, String[] selectionArgs) {
-		// TODO Auto-generated method stub
 		int count = 0;
 
 		String id = uri.getLastPathSegment(); // gets the id
 		count = database.delete(TABLE_NAME, ID + " = " + id, null);
 
-		getContext().getContentResolver().notifyChange(uri, null);
+		getContext().getContentResolver().notifyChange(CONTENT_URI, null);
 		return count;
 
 	}
