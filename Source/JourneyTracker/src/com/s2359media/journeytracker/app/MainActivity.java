@@ -31,6 +31,7 @@ import com.s2359media.journeytracker.R;
 import com.s2359media.journeytracker.adapter.JourneyAdapter;
 import com.s2359media.journeytracker.database.JourneyContentProvider;
 import com.s2359media.journeytracker.model.JourneyModel;
+import com.s2359media.journeytracker.ulti.AccentRemover;
 import com.s2359media.journeytracker.ulti.CommonConstant;
 import com.s2359media.journeytracker.ulti.CommonUlti;
 
@@ -213,7 +214,9 @@ public class MainActivity extends ActionBarActivity {
 					} else {
 						listJourneyModelsSearch = new ArrayList<JourneyModel>();
 						for (JourneyModel model : listJourneyModelsOrginal) {
-							if (model.toString().contains(s)) {
+							String input=AccentRemover.removeAccent(s.toString().toLowerCase());
+							String name=AccentRemover.removeAccent(model.toString().toLowerCase());
+							if(name.contains(input)){
 								listJourneyModelsSearch.add(model);
 							}
 						}
@@ -225,5 +228,4 @@ public class MainActivity extends ActionBarActivity {
 			}
 		};
 	}
-
 }
