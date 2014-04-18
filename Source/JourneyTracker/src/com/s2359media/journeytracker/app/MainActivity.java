@@ -79,7 +79,7 @@ public class MainActivity extends ActionBarActivity {
 		int id = item.getItemId();
 		if (id == R.id.action_settings) {
 			if (listDates.isEmpty()) {
-				ShowDialogNoData();
+				showDialogNoData();
 			} else {
 				showChooseDateDialog();
 			}
@@ -132,6 +132,7 @@ public class MainActivity extends ActionBarActivity {
 					}
 					i++;
 				}
+				c.close();
 			}
 
 			return null;
@@ -156,6 +157,48 @@ public class MainActivity extends ActionBarActivity {
 		}
 	}
 
+	private class InitJourneyData extends AsyncTask<Void, Void, Void> {
+		ProgressDialog dialog;
+
+		@Override
+		protected void onPreExecute() {
+			dialog = new ProgressDialog(mContext);
+			if (!isFinishing()) {
+				dialog.setMessage(getString(R.string.loading));
+				dialog.show();
+			}
+		}
+
+		@Override
+		protected Void doInBackground(Void... params) {
+			String url = JourneyContentProvider.URL + "/" + currentSelectDate;
+			Uri uriData = Uri.parse(url);
+			Cursor c = getContentResolver().query(uriData, null, null, null, null);
+			if (c != null) {
+				listJourneyModelsOrginal = new ArrayList<JourneyModel>();
+				while (c.moveToNext()) {
+					listJourneyModelsOrginal.add(new JourneyModel(c));
+				}
+			}
+			c.close();
+			return null;
+		}
+
+		@Override
+		protected void onPostExecute(Void result) {
+			if (dialog != null && dialog.isShowing()) {
+				dialog.dismiss();
+			}
+			if (adapter == null) {
+				adapter = new JourneyAdapter(mContext, listJourneyModelsOrginal);
+				list.setAdapter(adapter);
+			} else {
+				adapter.updateData(listJourneyModelsOrginal);
+				adapter.notifyDataSetChanged();
+			}
+		}
+	}
+
 	private void showChooseDateDialog() {
 		new AlertDialog.Builder(this).setSingleChoiceItems(slistDates, -1, null)
 				.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
@@ -171,25 +214,10 @@ public class MainActivity extends ActionBarActivity {
 	}
 
 	private void getJourneyFromDb(String title) {
-		String url = JourneyContentProvider.URL + "/" + currentSelectDate;
-		Uri uriData = Uri.parse(url);
-		Cursor c = getContentResolver().query(uriData, null, null, null, null);
-		if (c != null) {
-			listJourneyModelsOrginal = new ArrayList<JourneyModel>();
-			while (c.moveToNext()) {
-				listJourneyModelsOrginal.add(new JourneyModel(c));
-			}
-		}
-		if (adapter == null) {
-			adapter = new JourneyAdapter(mContext, listJourneyModelsOrginal);
-			list.setAdapter(adapter);
-		} else {
-			adapter.updateData(listJourneyModelsOrginal);
-			adapter.notifyDataSetChanged();
-		}
+		new InitJourneyData().execute();
 	}
 
-	private void ShowDialogNoData() {
+	private void showDialogNoData() {
 		new AlertDialog.Builder(mContext).setTitle(android.R.string.dialog_alert_title).setMessage(R.string.nodata).show();
 	}
 
@@ -198,12 +226,10 @@ public class MainActivity extends ActionBarActivity {
 
 			@Override
 			public void onTextChanged(CharSequence s, int start, int before, int count) {
-
 			}
 
 			@Override
 			public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
 			}
 
 			@Override
@@ -214,9 +240,9 @@ public class MainActivity extends ActionBarActivity {
 					} else {
 						listJourneyModelsSearch = new ArrayList<JourneyModel>();
 						for (JourneyModel model : listJourneyModelsOrginal) {
-							String input=AccentRemover.removeAccent(s.toString().toLowerCase());
-							String name=AccentRemover.removeAccent(model.toString().toLowerCase());
-							if(name.contains(input)){
+							String input = AccentRemover.removeAccent(s.toString().toLowerCase());
+							String name = AccentRemover.removeAccent(model.toString().toLowerCase());
+							if (name.contains(input)) {
 								listJourneyModelsSearch.add(model);
 							}
 						}
